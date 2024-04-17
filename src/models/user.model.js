@@ -1,34 +1,36 @@
 import mongoose, {Schema} from "mongoose";
+import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt"
 
-const userSchema =  new Schema(
+const userSchema = new Schema(
     {
-        usename: {
+        username: {
             type: String,
             required: true,
             unique: true,
             lowercase: true,
-            trim: true,
-            index:true
+            trim: true, 
+            index: true
         },
         email: {
             type: String,
             required: true,
             unique: true,
-            lowercase: true,
-            trim: true,
+            lowecase: true,
+            trim: true, 
         },
         fullName: {
             type: String,
-            required:true,
-            trim: true,
-            index:true
+            required: true,
+            trim: true, 
+            index: true
         },
         avatar: {
-            type:String,
-            required:true
+            type: String, // cloudinary url
+            required: true,
         },
-        coverimage: {
-            type: String,
+        coverImage: {
+            type: String, // cloudinary url
         },
         watchHistory: [
             {
@@ -52,6 +54,7 @@ const userSchema =  new Schema(
 
 userSchema.pre("save", async function (next) {
     if(!this.isModified("password")) return next();
+
     this.password = await bcrypt.hash(this.password, 10)
     next()
 })
@@ -61,7 +64,7 @@ userSchema.methods.isPasswordCorrect = async function(password){
 }
 
 userSchema.methods.generateAccessToken = function(){
-   return Jwt.sign(
+    return jwt.sign(
         {
             _id: this._id,
             email: this.email,
@@ -75,9 +78,10 @@ userSchema.methods.generateAccessToken = function(){
     )
 }
 userSchema.methods.generateRefreshToken = function(){
-    return Jwt.sign(
+    return jwt.sign(
         {
             _id: this._id,
+            
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
@@ -86,4 +90,4 @@ userSchema.methods.generateRefreshToken = function(){
     )
 }
 
-export const User = moongoose.model("User", userSchema )
+export const User = mongoose.model("User", userSchema)
